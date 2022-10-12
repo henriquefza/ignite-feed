@@ -1,30 +1,61 @@
+import { format, formatDistanceToNow } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR'
+import { useState } from 'react';
+
 import Avatar from './Avatar';
 import { Comment } from './Comment';
+
 import styles from './Post.module.css';
 
-export default function Post () {
+export default function Post ({ author, publishedAt, content }) {
+  console.log(author)
+  const [comments, setComments] = useState ([
+    1,
+    2,
+  ])
+
+  const publishedDateFormatted = format(publishedAt, "dd 'de' LLLL 'às' HH:mm'h'", {
+    locale: ptBR,
+  })
+
+  const publishedDateRelativeToNow = formatDistanceToNow(publishedAt, {
+    locale: ptBR,
+    addSuffix: true,
+  })
+
+  function handleCreateNewComment () {
+    event.preventDefault()
+
+    setComments([...comments, comments.length + 1]);
+  }
+
 return (
   <article className={styles.post}>
     <header>
       <div className={styles.author}>
-        <Avatar src="https://github.com/henriquefza.png"  />
+        <Avatar src={author.avatarUrl} />
         <div className={styles.authorInfo}>
-          <strong>Henrique Silva</strong>
-          <span> Web Developer</span>
+          <strong>{author.name}</strong>
+          <span>{author.role}</span>
         </div>
       </div>
 
-      <time title="25 de julho às 21:00h" dateTime="2022-07-25 21:00:00">Publicado há 1h</time>
+      <time title={publishedDateFormatted} dateTime={publishedAt.toISOString()}>
+        {publishedDateRelativeToNow}
+      </time>
     </header>
 
     <div className={styles.content}>
-      <p> Fala Galera !!</p>
-      <p> Publiquei um novo post</p>
-      <p><a href="">https://github.com/henriquefza.png</a></p>
-      <p><a href="">#novoprojeto</a></p>
+      {content.map( line => {
+        if (line.type === 'paragraph') {
+          return <p>{line.content}</p>;
+        }else if (line.type === 'link') {
+          return <p><a href="">{line.content}</a></p>
+        }
+      })}
     </div>
 
-    <form className={styles.commentForm}>
+    <form onSubmit={handleCreateNewComment} className={styles.commentForm}>
       <strong>Deixe seu comentário</strong>
 
       <textarea 
@@ -36,9 +67,9 @@ return (
     </form>
 
     <div className={styles.commentList}>
-      <Comment />
-      <Comment />
-      <Comment />
+      {comments.map (comment => {
+        <Comment />
+      })}
     </div>
 
   </article>
